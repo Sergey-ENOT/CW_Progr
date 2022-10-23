@@ -104,16 +104,16 @@ class Ui_studentForm(object):
 "border-color: rgb(89, 170, 139);")
         self.checkBox_street.setObjectName("checkBox_street")
         self.verticalLayout_2.addWidget(self.checkBox_street)
-        self.checkBox_hoise_flat = QtWidgets.QCheckBox(self.layoutWidget)
+        self.checkBox_house = QtWidgets.QCheckBox(self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.checkBox_hoise_flat.sizePolicy().hasHeightForWidth())
-        self.checkBox_hoise_flat.setSizePolicy(sizePolicy)
-        self.checkBox_hoise_flat.setStyleSheet("border: 2px solid;\n"
+        sizePolicy.setHeightForWidth(self.checkBox_house.sizePolicy().hasHeightForWidth())
+        self.checkBox_house.setSizePolicy(sizePolicy)
+        self.checkBox_house.setStyleSheet("border: 2px solid;\n"
 "border-color: rgb(89, 170, 139);")
-        self.checkBox_hoise_flat.setObjectName("checkBox_hoise_flat")
-        self.verticalLayout_2.addWidget(self.checkBox_hoise_flat)
+        self.checkBox_house.setObjectName("checkBox_house")
+        self.verticalLayout_2.addWidget(self.checkBox_house)
 
         self.retranslateUi(studentForm)
         QtCore.QMetaObject.connectSlotsByName(studentForm)
@@ -130,7 +130,7 @@ class Ui_studentForm(object):
         self.checkBox_date_birthday.setText(_translate("studentForm", "Дата рождения"))
         self.checkBox_town.setText(_translate("studentForm", "Город"))
         self.checkBox_street.setText(_translate("studentForm", "Улица"))
-        self.checkBox_hoise_flat.setText(_translate("studentForm", "Дом"))
+        self.checkBox_house.setText(_translate("studentForm", "Дом"))
 
 
 if __name__ == "__main__":

@@ -123,6 +123,37 @@ class CreatingDB:
         self.mycursor.close()
         self.mycursor = None
 
+    def add_study_groups(self):
+        try:
+            self.mycursor = self.connection_db.cursor()
+
+            self.mycursor.execute(f'''INSERT INTO study_group (group_id, direction_of_training, course) VALUES 
+                                ("bi-20i1", "Специалитет", "3"),
+                                ("pib-20i1", "Бакалавриат", "2");''')
+            self.connection_db.commit()
+            self.mycursor.close()
+        except Exception as error:
+            print("Error: ", error)
+        finally:
+            self.mycursor.close()
+            self.connection_db.close()
+
+    def add_students(self):
+        try:
+            self.mycursor = self.connection_db.cursor()
+
+            self.mycursor.execute(f'''INSERT INTO student (gradebook, surname, name, patronymic, study_group,
+                                    date_of_birth, town, street, house) VALUES 
+                        ("bi-20i1-16", "Ivanov", "Oleg", "Ivanovich", "bi-20i1", "2001-04-18", "Omsk", "Mira", "5"),
+                        ("pib-20i1-19", "Рассказов", "Дмитрий", "Олегович", "pib-20i1", "1999-04-18", "Moscow", "Mira", "6");''')
+            self.connection_db.commit()
+            self.mycursor.close()
+        except Exception as error:
+            print("Error: ", error)
+        finally:
+            self.mycursor.close()
+            self.connection_db.close()
+
     def close_connection(self):
         try:
             self.connection_db.close()
@@ -139,4 +170,13 @@ test.close_connection()
 
 test.create_connection_db()
 test.create_tables()
+test.close_connection()
+
+
+test.create_connection_db()
+test.add_study_groups()
+test.close_connection()
+
+test.create_connection_db()
+test.add_students()
 test.close_connection()

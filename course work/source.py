@@ -2,7 +2,7 @@ from db_connector import ConnectorDB
 from config import host, user, password, db_name
 
 
-connection_test_db = ConnectorDB(host, user, password, db_name, "users")
+connection_test_db = ConnectorDB(host, user, password, "test", "users")
 
 connection_test_db.create_connection()
 # connection_test_db.insert_data(name="Evgen", age=45, gender="male", nationally="rus")

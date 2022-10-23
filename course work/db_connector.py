@@ -25,28 +25,32 @@ class ConnectorDB:
             print("Connection refused...")
             print(ex)
 
-    def select_data(self, *args):
+    def select_data(self, list_data=None):
         try:
             self.mycursor = self.connection_db.cursor()
-            if len(args) == 0:
+            if list_data is None:
                 self.mycursor.execute(f'''SELECT * FROM {self.table_name}''')
                 for i in self.mycursor.fetchall():
                     print(i)
+                return self.mycursor.fetchall()
             else:
                 res_str = ""
-                for i in range(len(args)):
-                    res_str += args[i]
-                    if i != (len(args) - 1):
+                for i in range(len(list_data)):
+                    res_str += list_data[i]
+                    if i != (len(list_data) - 1):
                         res_str += ", "
                 self.mycursor.execute(f'''SELECT {res_str} FROM {self.table_name}''')
                 for i in self.mycursor.fetchall():
                     print(i)
-            self.mycursor.close()
+                return self.mycursor.fetchall()
         except Exception as ex:
             self.mycursor.close()
             self.connection_db.close()
             print("Error: ", end=" ")
             print(ex)
+        finally:
+            self.mycursor.close()
+            print("cursor closed")
 
     def insert_data(self, **kwargs):
         try:

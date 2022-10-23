@@ -42,7 +42,7 @@
      <attribute name="title">
       <string>Таблица &quot;Студент&quot;</string>
      </attribute>
-     <widget class="QTableWidget" name="tableWidget">
+     <widget class="QTableWidget" name="tableWidgetStudent">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -196,7 +196,7 @@
        <string>Поиск по значению в столбце</string>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>20</x>
@@ -231,7 +231,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>189</x>
