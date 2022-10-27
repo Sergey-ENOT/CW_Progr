@@ -51,6 +51,9 @@
         <height>341</height>
        </rect>
       </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
       <column>
        <property name="text">
         <string>Name</string>

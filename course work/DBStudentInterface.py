@@ -28,6 +28,7 @@ class Ui_MainWindow(object):
         self.tab_student.setObjectName("tab_student")
         self.tableWidgetStudent = QtWidgets.QTableWidget(self.tab_student)
         self.tableWidgetStudent.setGeometry(QtCore.QRect(10, 210, 971, 341))
+        self.tableWidgetStudent.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.tableWidgetStudent.setObjectName("tableWidgetStudent")
         self.tableWidgetStudent.setColumnCount(1)
         self.tableWidgetStudent.setRowCount(0)

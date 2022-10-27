@@ -30,9 +30,9 @@ class ConnectorDB:
             self.mycursor = self.connection_db.cursor()
             if list_data is None:
                 self.mycursor.execute(f'''SELECT * FROM {self.table_name}''')
-                for i in self.mycursor.fetchall():
-                    print(i)
                 return self.mycursor.fetchall()
+            elif len(list_data) == 0:
+                return []
             else:
                 res_str = ""
                 for i in range(len(list_data)):
@@ -40,9 +40,10 @@ class ConnectorDB:
                     if i != (len(list_data) - 1):
                         res_str += ", "
                 self.mycursor.execute(f'''SELECT {res_str} FROM {self.table_name}''')
-                for i in self.mycursor.fetchall():
-                    print(i)
                 return self.mycursor.fetchall()
+            # for i in self.mycursor.fetchall():
+            #     print("-/: ", i)
+            # return self.mycursor.fetchall()
         except Exception as ex:
             self.mycursor.close()
             self.connection_db.close()

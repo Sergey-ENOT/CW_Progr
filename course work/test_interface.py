@@ -1,3 +1,5 @@
+import datetime
+from datetime import date
 from PyQt5 import QtWidgets, QtCore
 from db_connector import ConnectorDB
 from config import host, user, password, db_name
@@ -111,8 +113,30 @@ class MyWindow(QtWidgets.QMainWindow):
         self.select_students()
         for i in range(self.ui.tableWidgetStudent.rowCount()):
             self.ui.tableWidgetStudent.removeColumn(i)
-        self.ui.tableWidgetStudent.setColumnCount(len(self.parameters_student.list_columns_name))
+
+        data = self.parameters_student.result_select
+        if len(data) > 0:
+            self.ui.tableWidgetStudent.setColumnWidth(0, 150)
+        numrows = len(data)
+        numcolumns = len(self.parameters_student.list_columns_name)
+        print(numrows, numcolumns)
+        self.ui.tableWidgetStudent.setColumnCount(numcolumns)
         self.ui.tableWidgetStudent.setHorizontalHeaderLabels(self.parameters_student.list_columns_name)
+        self.ui.tableWidgetStudent.setRowCount(numrows)
+
+        for row in range(numrows):
+            for column in range(numcolumns):
+                # Check if value datetime, if True convert to string
+                if isinstance(data[row][column], datetime.date):
+                    self.ui.tableWidgetStudent.setItem(row, column, QtWidgets.QTableWidgetItem(
+                                                                    (data[row][column].strftime('%d.%m.%Y'))))
+                elif isinstance(data[row][column], int):
+                    self.ui.tableWidgetStudent.setItem(row, column,
+                                                       QtWidgets.QTableWidgetItem((str(data[row][column]))))
+                else:
+                    self.ui.tableWidgetStudent.setItem(row, column,
+                                                       QtWidgets.QTableWidgetItem((data[row][column])))
+            print()
 
     def show_add_student(self):
         self.add_student_win = AddStudent()
