@@ -55,9 +55,24 @@ class ConnectorDB:
 
     def insert_data(self, **kwargs):
         try:
+            columns_str = ""
+            values_str = ""
+            counter = 1
+            for key in kwargs.keys():
+                columns_str += key
+                if counter != len(kwargs):
+                    columns_str += ", "
+                counter += 1
+
+            counter = 1
+            for key in kwargs.keys():
+                values_str += '"' + kwargs[key] + '"'
+                if counter != len(kwargs):
+                    values_str += ", "
+                counter += 1
+
             self.mycursor = self.connection_db.cursor()
-            self.mycursor.execute(f'''INSERT INTO {self.table_name} (name, age, gender, nationally)
-                    VALUES ("{kwargs["name"]}", "{kwargs["age"]}", "{kwargs["gender"]}", "{kwargs["nationally"]}");''')
+            self.mycursor.execute(f'''INSERT INTO {self.table_name} ({columns_str}) VALUES ({values_str});''')
             self.mycursor.close()
             self.connection_db.commit()
         except Exception as ex:

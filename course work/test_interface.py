@@ -1,6 +1,7 @@
 import datetime
 from datetime import date
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import QMessageBox
 from db_connector import ConnectorDB
 from config import host, user, password, db_name
 from DBStudentInterface import Ui_MainWindow
@@ -43,6 +44,7 @@ class MyWindow(QtWidgets.QMainWindow):
         self.ui.pushButtonDisplayRecordsStudent.clicked.connect(self.display_table_students)
         self.ui.pushButtonAddRecordStudent.clicked.connect(self.show_add_student)
         self.ui.pushButtonEditRecordStudent.clicked.connect(self.show_edit_student)
+        self.messagebox = QMessageBox()
         self.update_ui()
 
     def update_ui(self):
@@ -58,6 +60,29 @@ class MyWindow(QtWidgets.QMainWindow):
         self.set_student_win.ui.checkBox_town.setChecked(True)
         self.set_student_win.ui.checkBox_street.setChecked(True)
         self.set_student_win.ui.checkBox_house.setChecked(True)
+
+        self.add_student_win = AddStudent()
+        self.add_student_win.ui.pushButtonAddStudent.clicked.connect(self.hide_insert_student)
+
+    def show_messagebox(self, level, title, text):
+        if level == "critical":
+            self.messagebox.setIcon(QMessageBox.Critical)
+        elif level == "warning":
+            self.messagebox.setIcon(QMessageBox.Warning)
+        elif level == "information":
+            self.messagebox.setIcon(QMessageBox.Information)
+        self.messagebox.setWindowTitle(title)
+        self.messagebox.setText(text)
+        self.messagebox.exec_()
+
+    def check_valid_date(self, value_date):
+        if len(value_date) != 10:
+            print(value_date[3:5], type(value_date[3:5]))
+            return 1
+        elif int(value_date[0:2]) > 31:
+            return 2
+        elif value_date[3:5] == "00" or int(value_date[3:5]) > 12:
+            return 3
 
     def show_settings_student(self):
         self.set_student_win.show()
@@ -92,9 +117,6 @@ class MyWindow(QtWidgets.QMainWindow):
             self.parameters_student.list_checkBoxes.append("house")
             self.parameters_student.list_columns_name.append("Дом")
 
-        # print(self.set_student_win.ui.checkBox_gradebook.isChecked())
-        # self.ui.tableWidgetStudent.removeColumn(0)
-
     def hide_settings_student(self):
         self.get_settings_student()
         self.set_student_win.hide()
@@ -119,7 +141,6 @@ class MyWindow(QtWidgets.QMainWindow):
             self.ui.tableWidgetStudent.setColumnWidth(0, 150)
         numrows = len(data)
         numcolumns = len(self.parameters_student.list_columns_name)
-        print(numrows, numcolumns)
         self.ui.tableWidgetStudent.setColumnCount(numcolumns)
         self.ui.tableWidgetStudent.setHorizontalHeaderLabels(self.parameters_student.list_columns_name)
         self.ui.tableWidgetStudent.setRowCount(numrows)
@@ -136,11 +157,61 @@ class MyWindow(QtWidgets.QMainWindow):
                 else:
                     self.ui.tableWidgetStudent.setItem(row, column,
                                                        QtWidgets.QTableWidgetItem((data[row][column])))
-            print()
 
     def show_add_student(self):
-        self.add_student_win = AddStudent()
         self.add_student_win.show()
+        self.add_student_win.ui.lineEditFamily.setText("")
+        self.add_student_win.ui.lineEditName.setText("")
+        self.add_student_win.ui.lineEditPatronymic.setText("")
+        self.add_student_win.ui.lineEditGroup.setText("")
+        self.add_student_win.ui.lineEditDateBirthday.setText("")
+        self.add_student_win.ui.lineEditTown.setText("")
+        self.add_student_win.ui.lineEditStreet.setText("")
+        self.add_student_win.ui.lineEditHouse.setText("")
+
+    def insert_student(self):
+        getted_date = self.add_student_win.ui.lineEditDateBirthday.text().replace(" ", "")
+        try:
+            if len(self.add_student_win.ui.lineEditGradebook.text().strip()) == 0:
+                print("Incorrect gradebook")
+                self.show_messagebox("warning", "Warning", "Пустой номер\nзачётной книжки")
+                return False
+            elif self.check_valid_date(getted_date) == 1:
+                self.show_messagebox("warning", "Warning", "Некорректная длина даты\nФормат: dd.mm.YYYY")
+                return False
+            elif self.check_valid_date(getted_date) == 2:
+                self.show_messagebox("warning", "Warning", "Недопустимое значение дня\nФормат: dd.mm.YYYY")
+                return False
+            elif self.check_valid_date(getted_date) == 3:
+                self.show_messagebox("warning", "Warning", "Недопустимое значение месяца\nФормат: dd.mm.YYYY")
+                return False
+            else:
+                temp = self.add_student_win.ui.lineEditDateBirthday.text().replace(" ", "")
+                custom_date = temp[6:10] + "-" + temp[3:5] + "-" + temp[0:2]
+                print(custom_date)
+                self.student_connector.create_connection()
+                self.student_connector.insert_data(gradebook=self.add_student_win.ui.lineEditGradebook.text().strip(),
+                                                   surname=self.add_student_win.ui.lineEditFamily.text().strip(),
+                                                   name=self.add_student_win.ui.lineEditName.text().strip(),
+                                                   patronymic=self.add_student_win.ui.lineEditPatronymic.text().strip(),
+                                                   study_group=self.add_student_win.ui.lineEditGroup.text().strip(),
+                                                   date_of_birth=custom_date,
+                                                   town=self.add_student_win.ui.lineEditTown.text().strip(),
+                                                   street=self.add_student_win.ui.lineEditStreet.text().strip(),
+                                                   house=self.add_student_win.ui.lineEditHouse.text().strip()
+                                                   )
+                self.student_connector.close_connection()
+                return True
+        except Exception as error:
+            print("Error: ", error)
+            self.student_connector.close_connection()
+
+    def hide_insert_student(self):
+        insert_return = self.insert_student()
+        if insert_return:
+            self.add_student_win.hide()
+            self.get_settings_student()
+            self.display_table_students()
 
     def show_edit_student(self):
         self.edit_student_win = EditStudent()
