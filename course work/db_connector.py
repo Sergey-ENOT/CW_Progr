@@ -1,5 +1,4 @@
 import mysql.connector
-from mysql.connector import Error
 
 
 class ConnectorDB:
@@ -53,7 +52,7 @@ class ConnectorDB:
             self.mycursor.close()
             print("cursor closed")
 
-    def insert_data(self, **kwargs):
+    def insert_data(self, student_ext, **kwargs):
         try:
             columns_str = ""
             values_str = ""
@@ -78,8 +77,36 @@ class ConnectorDB:
         except Exception as ex:
             self.mycursor.close()
             self.connection_db.close()
-            print("Error: ", end=" ")
-            print(ex)
+            print("Error(connector): ", ex)
+            student_ext.error = ex
+
+    def update_data(self, student_ext, dict_changed):
+        try:
+            columns_str = ""
+            values_str = ""
+            counter = 1
+            for key in kwargs.keys():
+                columns_str += key
+                if counter != len(kwargs):
+                    columns_str += ", "
+                counter += 1
+
+            counter = 1
+            for key in kwargs.keys():
+                values_str += '"' + kwargs[key] + '"'
+                if counter != len(kwargs):
+                    values_str += ", "
+                counter += 1
+
+            self.mycursor = self.connection_db.cursor()
+            self.mycursor.execute(f'''UPDATE {self.table_name} SET ({columns_str}) VALUES ({values_str}) WHERE ;''')
+            self.mycursor.close()
+            self.connection_db.commit()
+        except Exception as ex:
+            self.mycursor.close()
+            self.connection_db.close()
+            print("Error(connector): ", ex)
+            student_ext.error = ex
 
     def delete_data(self, pk, value):
         try:

@@ -10,6 +10,18 @@ from pop_up_windows.settings_student import Ui_studentForm
 from pop_up_windows.add_student import Ui_addStudentForm
 from pop_up_windows.edit_student import Ui_editStudentForm
 import sys
+import traceback
+
+
+def log_uncaught_exceptions(ex_cls, ex, tb):  # error catcher
+    text = '{}: {}:\n'.format(ex_cls.__name__, ex)
+    text += ''.join(traceback.format_tb(tb))
+    print(text)
+    QtWidgets.QMessageBox.critical(None, 'Error', text)
+    sys.exit()
+
+
+sys.excepthook = log_uncaught_exceptions
 
 
 class SettingsStudent(QtWidgets.QWidget):
@@ -44,6 +56,8 @@ class MyWindow(QtWidgets.QMainWindow):
         self.ui.pushButtonDisplayRecordsStudent.clicked.connect(self.display_table_students)
         self.ui.pushButtonAddRecordStudent.clicked.connect(self.show_add_student)
         self.ui.pushButtonEditRecordStudent.clicked.connect(self.show_edit_student)
+        self.list_student_data = []
+        self.list_student_changed_data = []
         self.messagebox = QMessageBox()
         self.update_ui()
 
@@ -64,6 +78,9 @@ class MyWindow(QtWidgets.QMainWindow):
         self.add_student_win = AddStudent()
         self.add_student_win.ui.pushButtonAddStudent.clicked.connect(self.hide_insert_student)
 
+        self.edit_student_win = EditStudent()
+        self.edit_student_win.ui.pushButtonEditStudent.clicked.connect(self.hide_edit_student)
+
     def show_messagebox(self, level, title, text):
         if level == "critical":
             self.messagebox.setIcon(QMessageBox.Critical)
@@ -77,7 +94,6 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def check_valid_date(self, value_date):
         if len(value_date) != 10:
-            print(value_date[3:5], type(value_date[3:5]))
             return 1
         elif int(value_date[0:2]) > 31:
             return 2
@@ -89,33 +105,43 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def get_settings_student(self):
         self.parameters_student.clear_list()
+        self.parameters_student.current_len_lcn = 0
         if self.set_student_win.ui.checkBox_gradebook.isChecked():
             self.parameters_student.list_checkBoxes.append("gradebook")
             self.parameters_student.list_columns_name.append("№ Зачётной книжки")
+            self.parameters_student.current_len_lcn += 1
         if self.set_student_win.ui.checkBox_family.isChecked():
             self.parameters_student.list_checkBoxes.append("surname")
             self.parameters_student.list_columns_name.append("Фамилия")
+            self.parameters_student.current_len_lcn += 1
         if self.set_student_win.ui.checkBox_name.isChecked():
             self.parameters_student.list_checkBoxes.append("name")
             self.parameters_student.list_columns_name.append("Имя")
+            self.parameters_student.current_len_lcn += 1
         if self.set_student_win.ui.checkBox_patronymic.isChecked():
             self.parameters_student.list_checkBoxes.append("patronymic")
             self.parameters_student.list_columns_name.append("Отчество")
+            self.parameters_student.current_len_lcn += 1
         if self.set_student_win.ui.checkBox_group.isChecked():
             self.parameters_student.list_checkBoxes.append("study_group")
             self.parameters_student.list_columns_name.append("Группа")
+            self.parameters_student.current_len_lcn += 1
         if self.set_student_win.ui.checkBox_date_birthday.isChecked():
             self.parameters_student.list_checkBoxes.append("date_of_birth")
             self.parameters_student.list_columns_name.append("Дата рождения")
+            self.parameters_student.current_len_lcn += 1
         if self.set_student_win.ui.checkBox_town.isChecked():
             self.parameters_student.list_checkBoxes.append("town")
             self.parameters_student.list_columns_name.append("Город")
+            self.parameters_student.current_len_lcn += 1
         if self.set_student_win.ui.checkBox_street.isChecked():
             self.parameters_student.list_checkBoxes.append("street")
             self.parameters_student.list_columns_name.append("Улица")
+            self.parameters_student.current_len_lcn += 1
         if self.set_student_win.ui.checkBox_house.isChecked():
             self.parameters_student.list_checkBoxes.append("house")
             self.parameters_student.list_columns_name.append("Дом")
+            self.parameters_student.current_len_lcn += 1
 
     def hide_settings_student(self):
         self.get_settings_student()
@@ -133,6 +159,10 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def display_table_students(self):
         self.select_students()
+        if self.parameters_student.first_show:
+            self.get_settings_student()
+            self.parameters_student.first_show = False
+
         for i in range(self.ui.tableWidgetStudent.rowCount()):
             self.ui.tableWidgetStudent.removeColumn(i)
 
@@ -160,6 +190,7 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def show_add_student(self):
         self.add_student_win.show()
+        self.add_student_win.ui.lineEditGradebook.setText("")
         self.add_student_win.ui.lineEditFamily.setText("")
         self.add_student_win.ui.lineEditName.setText("")
         self.add_student_win.ui.lineEditPatronymic.setText("")
@@ -171,51 +202,130 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def insert_student(self):
         getted_date = self.add_student_win.ui.lineEditDateBirthday.text().replace(" ", "")
+        checked_date = self.check_valid_date(getted_date)
         try:
             if len(self.add_student_win.ui.lineEditGradebook.text().strip()) == 0:
                 print("Incorrect gradebook")
                 self.show_messagebox("warning", "Warning", "Пустой номер\nзачётной книжки")
                 return False
-            elif self.check_valid_date(getted_date) == 1:
+            elif checked_date == 1:
                 self.show_messagebox("warning", "Warning", "Некорректная длина даты\nФормат: dd.mm.YYYY")
                 return False
-            elif self.check_valid_date(getted_date) == 2:
+            elif checked_date == 2:
                 self.show_messagebox("warning", "Warning", "Недопустимое значение дня\nФормат: dd.mm.YYYY")
                 return False
-            elif self.check_valid_date(getted_date) == 3:
+            elif checked_date == 3:
                 self.show_messagebox("warning", "Warning", "Недопустимое значение месяца\nФормат: dd.mm.YYYY")
                 return False
             else:
-                temp = self.add_student_win.ui.lineEditDateBirthday.text().replace(" ", "")
-                custom_date = temp[6:10] + "-" + temp[3:5] + "-" + temp[0:2]
-                print(custom_date)
+                self.parameters_student.error = "default"
+                custom_date = getted_date[6:10] + "-" + getted_date[3:5] + "-" + getted_date[0:2]
                 self.student_connector.create_connection()
-                self.student_connector.insert_data(gradebook=self.add_student_win.ui.lineEditGradebook.text().strip(),
-                                                   surname=self.add_student_win.ui.lineEditFamily.text().strip(),
-                                                   name=self.add_student_win.ui.lineEditName.text().strip(),
-                                                   patronymic=self.add_student_win.ui.lineEditPatronymic.text().strip(),
-                                                   study_group=self.add_student_win.ui.lineEditGroup.text().strip(),
-                                                   date_of_birth=custom_date,
-                                                   town=self.add_student_win.ui.lineEditTown.text().strip(),
-                                                   street=self.add_student_win.ui.lineEditStreet.text().strip(),
-                                                   house=self.add_student_win.ui.lineEditHouse.text().strip()
-                                                   )
+                self.student_connector.insert_data(
+                                                self.parameters_student,
+                                                gradebook=self.add_student_win.ui.lineEditGradebook.text().strip(),
+                                                surname=self.add_student_win.ui.lineEditFamily.text().strip(),
+                                                name=self.add_student_win.ui.lineEditName.text().strip(),
+                                                patronymic=self.add_student_win.ui.lineEditPatronymic.text().strip(),
+                                                study_group=self.add_student_win.ui.lineEditGroup.text().strip(),
+                                                date_of_birth=custom_date,
+                                                town=self.add_student_win.ui.lineEditTown.text().strip(),
+                                                street=self.add_student_win.ui.lineEditStreet.text().strip(),
+                                                house=self.add_student_win.ui.lineEditHouse.text().strip()
+                                                )
                 self.student_connector.close_connection()
+                if self.parameters_student.error != "default":
+                    self.show_messagebox("critical", "Critical", str(self.parameters_student.error))
+                    return False
                 return True
         except Exception as error:
             print("Error: ", error)
             self.student_connector.close_connection()
+            return False
 
     def hide_insert_student(self):
         insert_return = self.insert_student()
         if insert_return:
             self.add_student_win.hide()
+            self.show_messagebox("information", "Information", "Запись успешно добавлена")
             self.get_settings_student()
             self.display_table_students()
 
     def show_edit_student(self):
-        self.edit_student_win = EditStudent()
-        self.edit_student_win.show()
+        if self.parameters_student.first_show:
+            self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                       "вывести записи таблицы")
+        elif self.parameters_student.current_len_lcn != self.parameters_student.static_len_lcn:
+            self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                       "настроить отображение всех столбцов")
+        elif self.ui.tableWidgetStudent.currentRow() == -1:
+            self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                       "выбрать запись в таблице")
+        else:
+            self.edit_student_win.show()
+            current_row = self.ui.tableWidgetStudent.currentRow()
+            self.list_student_data = [self.ui.tableWidgetStudent.item(current_row, i).text()
+                                      for i in range(self.parameters_student.static_len_lcn)]
+            self.list_student_changed_data = [self.edit_student_win.ui.lineEditGradebook,
+                                              self.edit_student_win.ui.lineEditFamily,
+                                              self.edit_student_win.ui.lineEditName,
+                                              self.edit_student_win.ui.lineEditPatronymic,
+                                              self.edit_student_win.ui.lineEditGroup,
+                                              self.edit_student_win.ui.lineEditDateBirthday,
+                                              self.edit_student_win.ui.lineEditTown,
+                                              self.edit_student_win.ui.lineEditStreet,
+                                              self.edit_student_win.ui.lineEditHouse]
+
+            for i in range(self.parameters_student.static_len_lcn):
+                self.list_student_changed_data[i].setText(self.list_student_data[i])
+
+    def comparison_values_student(self):
+        self.parameters_student.clear_dict()
+        for i in range(self.parameters_student.static_len_lcn):
+            if self.list_student_data[i] != self.list_student_changed_data[i].text().strip():
+                self.parameters_student.dict_changed_data[self.parameters_student.list_checkBoxes[i]] \
+                                                                            = self.list_student_changed_data[i].text()
+        print(self.parameters_student.dict_changed_data)
+
+    def edit_student(self):
+        getted_date = self.edit_student_win.ui.lineEditDateBirthday.text().replace(" ", "")
+        checked_date = self.check_valid_date(getted_date)
+        self.comparison_values_student()
+        try:
+            if len(self.edit_student_win.ui.lineEditGradebook.text().strip()) == 0:
+                print("Incorrect gradebook")
+                self.show_messagebox("warning", "Warning", "Пустой номер\nзачётной книжки")
+                return False
+            elif checked_date == 1:
+                self.show_messagebox("warning", "Warning", "Некорректная длина даты\nФормат: dd.mm.YYYY")
+                return False
+            elif checked_date == 2:
+                self.show_messagebox("warning", "Warning", "Недопустимое значение дня\nФормат: dd.mm.YYYY")
+                return False
+            elif checked_date == 3:
+                self.show_messagebox("warning", "Warning", "Недопустимое значение месяца\nФормат: dd.mm.YYYY")
+                return False
+            else:
+                custom_date = getted_date[6:10] + "-" + getted_date[3:5] + "-" + getted_date[0:2]
+                # self.student_connector.create_connection()
+                # self.student_connector.update_data()
+                # self.student_connector.close_connection()
+                if self.parameters_student.error != "default":
+                    self.show_messagebox("critical", "Critical", str(self.parameters_student.error))
+                    return False
+            return True
+        except Exception as error:
+            print("Error: ", error)
+            self.student_connector.close_connection()
+            return False
+
+    def hide_edit_student(self):
+        edit_return = self.edit_student()
+        if edit_return:
+            self.add_student_win.hide()
+            self.show_messagebox("information", "Information", "Запись успешно отредактирована")
+            self.get_settings_student()
+            self.display_table_students()
 
 
 app = QtWidgets.QApplication([])

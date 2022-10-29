@@ -154,7 +154,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_house_flat">
+       <widget class="QLabel" name="label_house">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -198,13 +198,13 @@
        <widget class="QLineEdit" name="lineEditStreet"/>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEditHouseFlat"/>
+       <widget class="QLineEdit" name="lineEditHouse"/>
       </item>
      </layout>
     </item>
    </layout>
   </widget>
-  <widget class="QPushButton" name="pushButtonAddStudent">
+  <widget class="QPushButton" name="pushButtonEditStudent">
    <property name="geometry">
     <rect>
      <x>270</x>
