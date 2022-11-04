@@ -11,7 +11,7 @@ class ConnectorDB:
         self.connection_db = None
         self.mycursor = None
 
-    def create_connection(self):
+    def create_connection(self, student_ext):
         try:
             self.connection_db = mysql.connector.connect(
                 host=self.host,
@@ -22,9 +22,11 @@ class ConnectorDB:
             )
         except Exception as ex:
             print("Connection refused...")
-            print(ex)
+            print("Error(connection):", ex)
+            student_ext.error = ex
+            raise Exception
 
-    def select_data(self, list_data=None):
+    def select_data(self, student_ext, list_data=None):
         try:
             self.mycursor = self.connection_db.cursor()
             if list_data is None:
@@ -36,15 +38,16 @@ class ConnectorDB:
                 self.mycursor.execute(f'''SELECT {", ".join(list_data)} FROM {self.table_name};''')
                 return self.mycursor.fetchall()
         except Exception as ex:
+            student_ext.error = ex
             self.mycursor.close()
             self.connection_db.close()
-            print("Error: ", end=" ")
+            print("Error(select_data): ", end=" ")
             print(ex)
         finally:
             self.mycursor.close()
             print("cursor closed")
 
-    def select_filtered_data(self, column, value, list_data=None):
+    def select_filtered_data(self, student_ext, column, value, list_data=None):
         try:
             self.mycursor = self.connection_db.cursor()
             if list_data is None:
@@ -54,9 +57,11 @@ class ConnectorDB:
             elif len(list_data) == 0:
                 return []
             else:
-                self.mycursor.execute(f'''SELECT {", ".join(list_data)} FROM {self.table_name} WHERE {column} LIKE "%{value}%";''')
+                self.mycursor.execute(f'''SELECT {", ".join(list_data)} FROM {self.table_name} 
+                                            WHERE {column} LIKE "%{value}%";''')
                 return self.mycursor.fetchall()
         except Exception as ex:
+            student_ext.error = ex
             self.mycursor.close()
             self.connection_db.close()
             print("Error(filtered_data): ", ex)

@@ -15,7 +15,7 @@ class ParametersStudent:
         self.current_len_lcn = 0
         self.dict_changed_data = {}
         self.pk = {"gradebook": ""}
-        self.result_select = None
+        self.result_select = ""
         self.error = "default"
 
     def clear_list(self):
