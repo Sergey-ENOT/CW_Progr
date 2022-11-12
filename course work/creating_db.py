@@ -1,6 +1,5 @@
 import mysql.connector
-from config import host, user, password, db_name
-from mysql.connector import Error
+from config import host, root_user, password, db_name
 
 
 class CreatingDB:
@@ -162,7 +161,7 @@ class CreatingDB:
             print(ex)
 
 
-test = CreatingDB(host, user, password, db_name)
+test = CreatingDB(host, root_user, password, db_name)
 
 test.create_connection_host()
 test.create_database_student()
@@ -171,7 +170,6 @@ test.close_connection()
 test.create_connection_db()
 test.create_tables()
 test.close_connection()
-
 
 test.create_connection_db()
 test.add_study_groups()

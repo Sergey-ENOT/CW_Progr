@@ -17,6 +17,7 @@ class ParametersStudent:
         self.pk = {"gradebook": ""}
         self.result_select = ""
         self.error = "default"
+        self.last_display = ""
 
     def clear_list(self):
         self.list_checkBoxes.clear()

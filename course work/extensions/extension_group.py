@@ -13,6 +13,7 @@ class ParametersGroup:
         self.pk = {"group_id": ""}
         self.result_select = ""
         self.error = "default"
+        self.last_display = ""
 
     def clear_list(self):
         self.list_checkBoxes.clear()
