@@ -5,6 +5,7 @@ password = "P@ssw0rd"
 db_name = "student"
 
 # pyuic5.exe -x "..\..\course work\DBStudentInterface.ui" -o "..\..\course work\DBStudentInterface.py"
+# pyuic5.exe -x "..\..\course work\LoginInterface.ui" -o "..\..\course work\LoginInterface.py"
 
 # pyuic5.exe -x "..\..\course work\pop_up_windows\settings_student.ui" -o "..\..\course work\pop_up_windows\settings_student.py"
 # pyuic5.exe -x "..\..\course work\pop_up_windows\add_student.ui" -o "..\..\course work\pop_up_windows\add_student.py"
@@ -25,3 +26,7 @@ db_name = "student"
 # pyuic5.exe -x "..\..\course work\pop_up_windows\settings_debt.ui" -o "..\..\course work\pop_up_windows\settings_debt.py"
 # pyuic5.exe -x "..\..\course work\pop_up_windows\add_debt.ui" -o "..\..\course work\pop_up_windows\add_debt.py"
 # pyuic5.exe -x "..\..\course work\pop_up_windows\edit_debt.ui" -o "..\..\course work\pop_up_windows\edit_debt.py"
+
+# pyuic5.exe -x "..\..\course work\pop_up_windows\settings_lt_scholarship.ui" -o "..\..\course work\pop_up_windows\settings_lt_scholarship.py"
+# pyuic5.exe -x "..\..\course work\pop_up_windows\add_lt_scholarship.ui" -o "..\..\course work\pop_up_windows\add_lt_scholarship.py"
+# pyuic5.exe -x "..\..\course work\pop_up_windows\edit_lt_scholarship.ui" -o "..\..\course work\pop_up_windows\edit_lt_scholarship.py"

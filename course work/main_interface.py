@@ -18,6 +18,9 @@ from pop_up_windows.edit_scholarship import Ui_editScholarshipForm
 from pop_up_windows.settings_debt import Ui_debtForm
 from pop_up_windows.add_debt import Ui_addDebtForm
 from pop_up_windows.edit_debt import Ui_editDebtForm
+from pop_up_windows.settings_lt_scholarship import Ui_ltScholarshipForm
+from pop_up_windows.add_lt_scholarship import Ui_addLTScholarshipForm
+from pop_up_windows.edit_lt_scholarship import Ui_editLTScholarshipForm
 import sys
 import traceback
 
@@ -138,9 +141,30 @@ class EditDebt(QtWidgets.QWidget):
         self.ui.setupUi(self)
 
 
+class SettingsLTScholarship(QtWidgets.QWidget):
+    def __init__(self):
+        super(SettingsLTScholarship, self).__init__()
+        self.ui = Ui_ltScholarshipForm()
+        self.ui.setupUi(self)
+
+
+class AddLTScholarship(QtWidgets.QWidget):
+    def __init__(self):
+        super(AddLTScholarship, self).__init__()
+        self.ui = Ui_addLTScholarshipForm()
+        self.ui.setupUi(self)
+
+
+class EditLTScholarship(QtWidgets.QWidget):
+    def __init__(self):
+        super(EditLTScholarship, self).__init__()
+        self.ui = Ui_editLTScholarshipForm()
+        self.ui.setupUi(self)
+
+
 class MyWindow(QtWidgets.QMainWindow):
     def __init__(self, ext_student, st_conn, ext_group, gr_conn, ext_subject, sub_conn, ext_scholarship, sch_conn,
-                 ext_debt, debt_conn):
+                 ext_debt, debt_conn, ext_lt_scholarship, lt_sch_conn):
         super(MyWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -180,6 +204,13 @@ class MyWindow(QtWidgets.QMainWindow):
         self.set_debt_win = SettingsDebt()
         self.add_debt_win = AddDebt()
         self.edit_debt_win = EditDebt()
+        self.lt_scholarship_connector = lt_sch_conn
+        self.parameters_lt_scholarship = ext_lt_scholarship
+        self.list_lt_scholarship_data = []
+        self.list_lt_scholarship_changed_data = []
+        self.set_lt_scholarship_win = SettingsLTScholarship()
+        self.add_lt_scholarship_win = AddLTScholarship()
+        self.edit_lt_scholarship_win = EditLTScholarship()
         self.update_ui()
         self.connect_buttons()
 
@@ -216,6 +247,11 @@ class MyWindow(QtWidgets.QMainWindow):
         self.set_debt_win.ui.checkBox_semester.setChecked(True)
         self.set_debt_win.ui.checkBox_date.setChecked(True)
         self.ui.comboBoxValueSearchColumnDebt.addItems(self.parameters_debt.list_combo_box)
+
+        self.set_lt_scholarship_win.ui.checkBox_id_appoitment.setChecked(True)
+        self.set_lt_scholarship_win.ui.checkBox_id_scholarship.setChecked(True)
+        self.set_lt_scholarship_win.ui.checkBox_id_student.setChecked(True)
+        self.ui.comboBoxValueSearchColumnLTScholarship.addItems(self.parameters_lt_scholarship.list_combo_box)
 
     def connect_buttons(self):
         self.ui.pushButtonSettingsColumnsStudent.clicked.connect(self.show_settings_student)
@@ -268,6 +304,16 @@ class MyWindow(QtWidgets.QMainWindow):
         self.edit_debt_win.ui.pushButtonEditDebt.clicked.connect(self.hide_edit_debt)
         self.ui.pushButtonDeleteRecordDebt.clicked.connect(self.delete_debt)
 
+        self.ui.pushButtonSettingsColumnsLTScholarship.clicked.connect(self.show_settings_lt_scholarship)
+        self.set_lt_scholarship_win.ui.pushButtonApplySettingsLTScholarship.clicked.connect(self.hide_settings_lt_scholarship)
+        self.ui.pushButtonDisplayRecordsLTScholarship.clicked.connect(self.display_table_lt_scholarships)
+        self.ui.pushButtonSearchValueLTScholarship.clicked.connect(self.display_filtered_table_lt_scholarships)
+        self.ui.pushButtonAddRecordLTScholarship.clicked.connect(self.show_add_lt_scholarship)
+        self.add_lt_scholarship_win.ui.pushButtonAddLTScholarship.clicked.connect(self.hide_insert_lt_scholarship)
+        self.ui.pushButtonEditRecordLTScholarship.clicked.connect(self.show_edit_lt_scholarship)
+        self.edit_lt_scholarship_win.ui.pushButtonEditLTScholarship.clicked.connect(self.hide_edit_lt_scholarship)
+        self.ui.pushButtonDeleteRecordLTScholarship.clicked.connect(self.delete_lt_scholarship)
+
     def show_messagebox(self, level, title, text):
         if level == "critical":
             self.messagebox.setIcon(QMessageBox.Critical)
@@ -277,7 +323,7 @@ class MyWindow(QtWidgets.QMainWindow):
             self.messagebox.setIcon(QMessageBox.Information)
         self.messagebox.setWindowTitle(title)
         self.messagebox.setText(text)
-        self.messagebox.exec_()
+        self.messagebox.exec()
 
     def check_valid_date(self, value_date):
         if len(value_date) != 10:
@@ -1426,7 +1472,7 @@ class MyWindow(QtWidgets.QMainWindow):
                 if msg_box == QMessageBox.Yes:
                     try:
                         self.scholarship_connector.create_connection(self.parameters_scholarship)
-                        self.scholarship_connector.delete_data(self.parameters_subject, "id", pk_scholarship_id)
+                        self.scholarship_connector.delete_data(self.parameters_scholarship, "id", pk_scholarship_id)
                         self.scholarship_connector.close_connection()
                         if self.parameters_scholarship.error != "default":
                             self.show_messagebox("critical", "Critical", str(self.parameters_scholarship.error))
@@ -1537,14 +1583,14 @@ class MyWindow(QtWidgets.QMainWindow):
                         (data[row][column].strftime('%d.%m.%Y'))))
                 elif isinstance(data[row][column], int):
                     self.ui.tableWidgetDebt.setItem(row, column,
-                                                           QtWidgets.QTableWidgetItem((str(data[row][column]))))
+                                                    QtWidgets.QTableWidgetItem((str(data[row][column]))))
                 else:
                     self.ui.tableWidgetDebt.setItem(row, column,
-                                                           QtWidgets.QTableWidgetItem((data[row][column])))
+                                                    QtWidgets.QTableWidgetItem((data[row][column])))
 
     def display_filtered_table_debts(self):
         db_column = self.parameters_debt.dict_combo_box[
-            self.ui.comboBoxValueSearchColumnScholarship.currentText()]
+            self.ui.comboBoxValueSearchColumnDebt.currentText()]
         search_text = self.ui.lineEditSearchValueDebt.text().strip()
 
         self.select_debt(db_column, search_text)
@@ -1570,10 +1616,10 @@ class MyWindow(QtWidgets.QMainWindow):
                         (data[row][column].strftime('%d.%m.%Y'))))
                 elif isinstance(data[row][column], int):
                     self.ui.tableWidgetDebt.setItem(row, column,
-                                                           QtWidgets.QTableWidgetItem((str(data[row][column]))))
+                                                    QtWidgets.QTableWidgetItem((str(data[row][column]))))
                 else:
                     self.ui.tableWidgetDebt.setItem(row, column,
-                                                           QtWidgets.QTableWidgetItem((data[row][column])))
+                                                    QtWidgets.QTableWidgetItem((data[row][column])))
 
     def show_add_debt(self):
         self.add_debt_win.show()
@@ -1656,10 +1702,12 @@ class MyWindow(QtWidgets.QMainWindow):
                 self.list_debt_changed_data[i].setText(self.list_debt_data[i])
 
     def comparison_values_debt(self):
+        print(self.list_debt_data)
         self.parameters_debt.clear_dict()
-        for i in range(self.parameters_debt.static_len_lcn - 1):
-            if self.list_scholarship_data[i] != self.list_scholarship_changed_data[i].text().strip():
-                self.parameters_debt.dict_changed_data[self.parameters_debt.list_checkBoxes[i]] \
+        for i in range(self.parameters_debt.static_len_lcn-1):
+            if self.list_debt_data[i] != self.list_debt_changed_data[i].text().strip():
+                print(self.list_debt_data[i], self.list_debt_changed_data[i].text().strip())
+                self.parameters_debt.dict_changed_data[self.parameters_debt.list_checkBoxes[i+1]] \
                     = self.list_debt_changed_data[i].text()
 
     def edit_debt(self):
@@ -1667,6 +1715,10 @@ class MyWindow(QtWidgets.QMainWindow):
             if len(self.edit_debt_win.ui.lineEditGradebook.text().strip()) == 0:
                 print("Incorrect id debt")
                 self.show_messagebox("warning", "Warning", "Пустой номер зачётки")
+                return False
+            elif len(self.edit_debt_win.ui.lineEditIdSubject.text().strip()) == 0:
+                print("Incorrect id subject")
+                self.show_messagebox("warning", "Warning", "Пустой номер id предмета")
                 return False
             else:
                 self.parameters_debt.error = "default"
@@ -1722,11 +1774,11 @@ class MyWindow(QtWidgets.QMainWindow):
                 current_row = self.ui.tableWidgetDebt.currentRow()
                 pk_debt_id = self.ui.tableWidgetDebt.item(current_row, 0).text()
                 msg_box = QMessageBox.question(self, "Подтверждение удаления",
-                                               f"Вы хотите удалить группу с \nномером {pk_debt_id}?",
+                                               f"Вы хотите удалить долг с \nномером {pk_debt_id}?",
                                                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
                 if msg_box == QMessageBox.Yes:
                     try:
-                        self.debt_connector.create_connection(self.parameters_scholarship)
+                        self.debt_connector.create_connection(self.parameters_debt)
                         self.debt_connector.delete_data(self.parameters_debt, "id", pk_debt_id)
                         self.debt_connector.close_connection()
                         if self.parameters_debt.error != "default":
@@ -1740,3 +1792,294 @@ class MyWindow(QtWidgets.QMainWindow):
         except Exception as error:
             print("Error: ", error)
             self.debt_connector.close_connection()
+
+    '''------------------------------------------------------------------------------------------------------'''
+
+    def show_settings_lt_scholarship(self):
+        self.set_lt_scholarship_win.show()
+
+    def get_settings_lt_scholarship(self):
+        self.parameters_lt_scholarship.clear_list()
+        self.parameters_lt_scholarship.current_len_lcn = 0
+        if self.set_lt_scholarship_win.ui.checkBox_id_appoitment.isChecked():
+            self.parameters_lt_scholarship.list_checkBoxes.append("id")
+            self.parameters_lt_scholarship.list_columns_name.append("Id назначения")
+            self.parameters_lt_scholarship.current_len_lcn += 1
+        if self.set_lt_scholarship_win.ui.checkBox_id_student.isChecked():
+            self.parameters_lt_scholarship.list_checkBoxes.append("student_id")
+            self.parameters_lt_scholarship.list_columns_name.append("Номер зачётки студента")
+            self.parameters_lt_scholarship.current_len_lcn += 1
+        if self.set_lt_scholarship_win.ui.checkBox_id_scholarship.isChecked():
+            self.parameters_lt_scholarship.list_checkBoxes.append("scholarship_id")
+            self.parameters_lt_scholarship.list_columns_name.append("Id стипендии")
+            self.parameters_lt_scholarship.current_len_lcn += 1
+
+    def hide_settings_lt_scholarship(self):
+        self.get_settings_lt_scholarship()
+        self.set_lt_scholarship_win.hide()
+
+    def select_lt_scholarship(self, column=None, value=None):
+        try:
+            self.lt_scholarship_connector.create_connection(self.parameters_lt_scholarship)
+            if (column is None) and (value is None):
+                if len(self.parameters_lt_scholarship.list_checkBoxes) == 3:
+                    self.parameters_lt_scholarship.result_select = self.lt_scholarship_connector.select_data(
+                        self.parameters_lt_scholarship)
+                    self.parameters_lt_scholarship.all_columns = True
+                    print("selected all")
+                else:
+                    self.parameters_lt_scholarship.result_select = self.lt_scholarship_connector.select_data(
+                        self.parameters_lt_scholarship,
+                        self.parameters_lt_scholarship.list_checkBoxes)
+                    self.parameters_lt_scholarship.all_columns = False
+                    print("selected with parameters")
+                self.parameters_lt_scholarship.last_display = "all"
+            elif not (column is None) and not (value is None):
+                if len(self.parameters_lt_scholarship.list_checkBoxes) == 3:
+                    self.parameters_lt_scholarship.result_select = self.lt_scholarship_connector.select_filtered_data(
+                        self.parameters_lt_scholarship,
+                        column, value)
+                    self.parameters_lt_scholarship.all_columns = True
+                    print("selected all(filtered)")
+                else:
+                    self.parameters_lt_scholarship.result_select = self.lt_scholarship_connector.select_filtered_data(
+                        self.parameters_lt_scholarship,
+                        column,
+                        value,
+                        self.parameters_lt_scholarship.list_checkBoxes)
+                    self.parameters_lt_scholarship.all_columns = False
+                    print("selected with parameters(filtered)")
+                self.parameters_lt_scholarship.last_display = "filtered"
+            self.lt_scholarship_connector.close_connection()
+        except Exception:
+            self.show_messagebox("critical", "Critical", str(self.parameters_lt_scholarship.error))
+
+    def display_table_lt_scholarships(self):
+        self.select_lt_scholarship()
+        if self.parameters_lt_scholarship.first_show:
+            self.get_settings_lt_scholarship()
+            self.parameters_lt_scholarship.first_show = False
+
+        for i in range(self.ui.tableWidgetLTScholarship.rowCount()):
+            self.ui.tableWidgetLTScholarship.removeColumn(i)
+
+        data = self.parameters_lt_scholarship.result_select
+
+        numrows = len(data)
+        numcolumns = len(self.parameters_lt_scholarship.list_columns_name)
+        self.ui.tableWidgetLTScholarship.setColumnCount(numcolumns)
+        self.ui.tableWidgetLTScholarship.setHorizontalHeaderLabels(self.parameters_lt_scholarship.list_columns_name)
+        self.ui.tableWidgetLTScholarship.setRowCount(numrows)
+        if len(data) > 0:
+            self.ui.tableWidgetLTScholarship.setColumnWidth(0, 150)
+            self.ui.tableWidgetLTScholarship.setColumnWidth(1, 150)
+
+        for row in range(numrows):
+            for column in range(numcolumns):
+                # Check if value datetime, if True convert to string
+                if isinstance(data[row][column], datetime.date):
+                    self.ui.tableWidgetLTScholarship.setItem(row, column, QtWidgets.QTableWidgetItem(
+                        (data[row][column].strftime('%d.%m.%Y'))))
+                elif isinstance(data[row][column], int):
+                    self.ui.tableWidgetLTScholarship.setItem(row, column,
+                                                    QtWidgets.QTableWidgetItem((str(data[row][column]))))
+                else:
+                    self.ui.tableWidgetLTScholarship.setItem(row, column,
+                                                    QtWidgets.QTableWidgetItem((data[row][column])))
+
+    def display_filtered_table_lt_scholarships(self):
+        db_column = self.parameters_lt_scholarship.dict_combo_box[
+            self.ui.comboBoxValueSearchColumnLTScholarship.currentText()]
+        search_text = self.ui.lineEditSearchValueLTScholarship.text().strip()
+
+        self.select_lt_scholarship(db_column, search_text)
+
+        for i in range(self.ui.tableWidgetLTScholarship.rowCount()):
+            self.ui.tableWidgetLTScholarship.removeColumn(i)
+
+        data = self.parameters_lt_scholarship.result_select
+        numrows = len(data)
+        numcolumns = len(self.parameters_lt_scholarship.list_columns_name)
+        self.ui.tableWidgetLTScholarship.setColumnCount(numcolumns)
+        self.ui.tableWidgetLTScholarship.setHorizontalHeaderLabels(self.parameters_lt_scholarship.list_columns_name)
+        self.ui.tableWidgetLTScholarship.setRowCount(numrows)
+        if len(data) > 0:
+            self.ui.tableWidgetLTScholarship.setColumnWidth(0, 150)
+            self.ui.tableWidgetLTScholarship.setColumnWidth(1, 150)
+
+        for row in range(numrows):
+            for column in range(numcolumns):
+                # Check if value datetime, if True convert to string
+                if isinstance(data[row][column], datetime.date):
+                    self.ui.tableWidgetLTScholarship.setItem(row, column, QtWidgets.QTableWidgetItem(
+                        (data[row][column].strftime('%d.%m.%Y'))))
+                elif isinstance(data[row][column], int):
+                    self.ui.tableWidgetLTScholarship.setItem(row, column,
+                                                    QtWidgets.QTableWidgetItem((str(data[row][column]))))
+                else:
+                    self.ui.tableWidgetLTScholarship.setItem(row, column,
+                                                    QtWidgets.QTableWidgetItem((data[row][column])))
+
+    def show_add_lt_scholarship(self):
+        self.add_lt_scholarship_win.show()
+        self.add_lt_scholarship_win.ui.lineEditIdStudent.setText("")
+        self.add_lt_scholarship_win.ui.lineEditIdScholarship.setText("")
+
+    def insert_lt_scholarship(self):
+        try:
+            if len(self.add_lt_scholarship_win.ui.lineEditIdStudent.text().strip()) == 0:
+                print("Incorrect gradebook")
+                self.show_messagebox("warning", "Warning", "Пустой номер\nзачётной книжки")
+                return False
+            elif len(self.add_lt_scholarship_win.ui.lineEditIdScholarship.text().strip()) == 0:
+                print("Incorrect subject_id")
+                self.show_messagebox("warning", "Warning", "Пустой id стипендии")
+                return False
+            else:
+                self.parameters_lt_scholarship.error = "default"
+                try:
+                    self.lt_scholarship_connector.create_connection(self.parameters_lt_scholarship)
+                except Exception:
+                    self.show_messagebox("critical", "Critical", str(self.parameters_lt_scholarship.error))
+                self.lt_scholarship_connector.insert_data(
+                    self.parameters_lt_scholarship,
+                    student_id=self.add_lt_scholarship_win.ui.lineEditIdStudent.text().strip(),
+                    scholarship_id=self.add_lt_scholarship_win.ui.lineEditIdScholarship.text().strip(),
+                )
+                self.lt_scholarship_connector.close_connection()
+                if self.parameters_lt_scholarship.error != "default":
+                    self.show_messagebox("critical", "Critical", str(self.parameters_lt_scholarship.error))
+                    return False
+                return True
+        except Exception as error:
+            print("Error: ", error)
+            self.lt_scholarship_connector.close_connection()
+            return False
+
+    def hide_insert_lt_scholarship(self):
+        insert_return = self.insert_lt_scholarship()
+        if insert_return:
+            self.add_lt_scholarship_win.hide()
+            self.show_messagebox("information", "Information", "Запись успешно добавлена")
+            self.get_settings_lt_scholarship()
+            self.display_table_lt_scholarships()
+
+    def show_edit_lt_scholarship(self):
+        if self.parameters_lt_scholarship.first_show:
+            self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                       "вывести записи таблицы")
+        elif self.parameters_lt_scholarship.current_len_lcn != self.parameters_lt_scholarship.static_len_lcn:
+            self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                       "настроить отображение всех столбцов")
+        elif not self.parameters_lt_scholarship.all_columns:
+            self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                       "вывести записи после настройки столбцов")
+        elif self.ui.tableWidgetLTScholarship.currentRow() == -1:
+            self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                       "выбрать запись в таблице")
+        else:
+            self.edit_lt_scholarship_win.show()
+            current_row = self.ui.tableWidgetLTScholarship.currentRow()
+            self.parameters_lt_scholarship.pk["id"] = self.ui.tableWidgetLTScholarship.item(current_row, 0).text()
+            self.list_lt_scholarship_data = [self.ui.tableWidgetLTScholarship.item(current_row, i).text()
+                                             for i in range(1, self.parameters_lt_scholarship.static_len_lcn)]
+            self.list_lt_scholarship_changed_data = [self.edit_lt_scholarship_win.ui.lineEditIdStudent,
+                                                     self.edit_lt_scholarship_win.ui.lineEditIdScholarship]
+
+            for i in range(self.parameters_lt_scholarship.static_len_lcn - 1):
+                self.list_lt_scholarship_changed_data[i].setText(self.list_lt_scholarship_data[i])
+
+    def comparison_values_lt_scholarship(self):
+        print(self.list_lt_scholarship_data)
+        self.parameters_lt_scholarship.clear_dict()
+        for i in range(self.parameters_lt_scholarship.static_len_lcn - 1):
+            if self.list_lt_scholarship_data[i] != self.list_lt_scholarship_changed_data[i].text().strip():
+                print(self.list_lt_scholarship_data[i], self.list_lt_scholarship_changed_data[i].text().strip())
+                self.parameters_lt_scholarship.dict_changed_data[self.parameters_lt_scholarship.list_checkBoxes[i + 1]] \
+                    = self.list_lt_scholarship_changed_data[i].text()
+
+    def edit_lt_scholarship(self):
+        try:
+            if len(self.edit_lt_scholarship_win.ui.lineEditIdStudent.text().strip()) == 0:
+                print("Incorrect id debt")
+                self.show_messagebox("warning", "Warning", "Пустой номер зачётки")
+                return False
+            elif len(self.edit_lt_scholarship_win.ui.lineEditIdScholarship.text().strip()) == 0:
+                print("Incorrect id subject")
+                self.show_messagebox("warning", "Warning", "Пустой id стипендии")
+                return False
+            else:
+                self.parameters_lt_scholarship.error = "default"
+                self.comparison_values_lt_scholarship()
+                if len(self.parameters_lt_scholarship.dict_changed_data) == 0:
+                    self.show_messagebox("information", "Information", "Изменений не обнаружено")
+                    return False
+                try:
+                    self.lt_scholarship_connector.create_connection(self.parameters_lt_scholarship)
+                except Exception:
+                    self.show_messagebox("critical", "Critical", str(self.parameters_debt.error))
+                self.lt_scholarship_connector.update_data(self.parameters_lt_scholarship,
+                                                self.parameters_lt_scholarship.pk,
+                                                self.parameters_lt_scholarship.dict_changed_data)
+                self.debt_connector.close_connection()
+                if self.parameters_lt_scholarship.error != "default":
+                    self.show_messagebox("critical", "Critical", str(self.parameters_lt_scholarship.error))
+                    return False
+            return True
+        except Exception as error:
+            print("Error: ", error)
+            self.lt_scholarship_connector.close_connection()
+            return False
+
+    def hide_edit_lt_scholarship(self):
+        edit_return = self.edit_lt_scholarship()
+        if edit_return:
+            self.edit_lt_scholarship_win.hide()
+            self.show_messagebox("information", "Information", "Запись успешно отредактирована")
+            self.get_settings_lt_scholarship()
+            print(self.parameters_lt_scholarship.last_display)
+            if self.parameters_lt_scholarship.last_display == "all":
+                self.display_table_lt_scholarships()
+            elif self.parameters_lt_scholarship.last_display == "filtered":
+                self.display_filtered_table_lt_scholarships()
+
+    def delete_lt_scholarship(self):
+        try:
+            if self.parameters_lt_scholarship.first_show:
+                self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                           "вывести записи таблицы")
+            elif "id" not in set(self.parameters_lt_scholarship.list_checkBoxes):
+                self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                           "настроить отображение id назначения")
+            elif self.ui.tableWidgetLTScholarship.horizontalHeaderItem(0).text() != "Id назначения":
+                self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                           "вывести номер долга")
+            elif self.ui.tableWidgetLTScholarship.currentRow() == -1:
+                self.show_messagebox("warning", "Warning", "Для выполнения операции необходимо\n"
+                                                           "выбрать запись в таблице")
+            else:
+                self.parameters_lt_scholarship.error = "default"
+                current_row = self.ui.tableWidgetLTScholarship.currentRow()
+                pk_lt_scholarship_id = self.ui.tableWidgetLTScholarship.item(current_row, 0).text()
+                msg_box = QMessageBox.question(self, "Подтверждение удаления",
+                                               f"Вы хотите удалить долг с \nномером {pk_lt_scholarship_id}?",
+                                               QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if msg_box == QMessageBox.Yes:
+                    try:
+                        self.lt_scholarship_connector.create_connection(self.parameters_lt_scholarship)
+                        self.lt_scholarship_connector.delete_data(self.parameters_lt_scholarship, "id",
+                                                                  pk_lt_scholarship_id)
+                        self.lt_scholarship_connector.close_connection()
+                        if self.parameters_lt_scholarship.error != "default":
+                            self.show_messagebox("critical", "Critical", str(self.parameters_lt_scholarship.error))
+                        else:
+                            self.show_messagebox("information", "Information", "Запись успешно удалена")
+                            self.get_settings_lt_scholarship()
+                            self.display_table_lt_scholarships()
+                    except Exception:
+                        self.show_messagebox("critical", "Critical", str(self.parameters_lt_scholarship.error))
+        except Exception as error:
+            print("Error: ", error)
+            self.lt_scholarship_connector.close_connection()
+
+    '''------------------------------------------------------------------------------------------------------'''
