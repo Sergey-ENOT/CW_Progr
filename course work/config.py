@@ -1,10 +1,11 @@
 host = "localhost"
-root_user = "root"
-guest_user = "sergey"
+root_set = {"root"}
+guest_set = {"sergey"}
 password = "P@ssw0rd"
 db_name = "student"
 
 # pyuic5.exe -x "..\..\course work\DBStudentInterface.ui" -o "..\..\course work\DBStudentInterface.py"
+# pyuic5.exe -x "..\..\course work\DBNonAdminInterface.ui" -o "..\..\course work\DBNonAdminInterface.py"
 # pyuic5.exe -x "..\..\course work\LoginInterface.ui" -o "..\..\course work\LoginInterface.py"
 
 # pyuic5.exe -x "..\..\course work\pop_up_windows\settings_student.ui" -o "..\..\course work\pop_up_windows\settings_student.py"

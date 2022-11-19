@@ -1,4 +1,4 @@
-from config import host, root_user, guest_user, password, db_name
+from config import host, root_set, guest_set, password, db_name
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMessageBox
 from db_connector import ConnectorDB
@@ -10,16 +10,19 @@ from extensions.extension_scholarship import ParametersScholarship
 from extensions.extension_debt import ParametersDebt
 from extensions.extension_lt_scholarship import ParametersLTScholarship
 from main_interface import MyWindow
+from non_admin_interface import UserMyWindow
 import sys
 
 
 class LoginWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, admin_set, user_set):
         super(LoginWindow, self).__init__()
         self.ui = Ui_LoginWindow()
         self.ui.setupUi(self)
         self.login = ""
         self.password = ""
+        self.admin_set = admin_set
+        self.user_set = user_set
         self.application = None
         self.messagebox = QMessageBox()
         self.test = ParametersStudent()
@@ -62,25 +65,39 @@ class LoginWindow(QtWidgets.QMainWindow):
                 scholarship_connector = ConnectorDB(host, self.login, self.password, db_name, "scholarship")
                 debt_connector = ConnectorDB(host, self.login, self.password, db_name, "debt")
                 lt_scholarship_connector = ConnectorDB(host, self.login, self.password, db_name, "student_scholarship")
-
-                self.application = MyWindow(ParametersStudent(),
-                                            student_connector,
-                                            ParametersGroup(),
-                                            group_connector,
-                                            ParametersSubject(),
-                                            subject_connector,
-                                            ParametersScholarship(),
-                                            scholarship_connector,
-                                            ParametersDebt(),
-                                            debt_connector,
-                                            ParametersLTScholarship(),
-                                            lt_scholarship_connector)
-                self.application.show()
+                if self.login in self.admin_set:
+                    self.application = MyWindow(ParametersStudent(),
+                                                student_connector,
+                                                ParametersGroup(),
+                                                group_connector,
+                                                ParametersSubject(),
+                                                subject_connector,
+                                                ParametersScholarship(),
+                                                scholarship_connector,
+                                                ParametersDebt(),
+                                                debt_connector,
+                                                ParametersLTScholarship(),
+                                                lt_scholarship_connector)
+                    self.application.show()
+                elif self.login in self.user_set:
+                    self.application = UserMyWindow(ParametersStudent(),
+                                                    student_connector,
+                                                    ParametersGroup(),
+                                                    group_connector,
+                                                    ParametersSubject(),
+                                                    subject_connector,
+                                                    ParametersScholarship(),
+                                                    scholarship_connector,
+                                                    ParametersDebt(),
+                                                    debt_connector,
+                                                    ParametersLTScholarship(),
+                                                    lt_scholarship_connector)
+                    self.application.show()
             except Exception:
                 self.show_messagebox("critical", "Critical", "Access denied for this user")
 
 
 app = QtWidgets.QApplication([])
-login_w = LoginWindow()
+login_w = LoginWindow(root_set, guest_set)
 login_w.show()
 sys.exit(app.exec())
